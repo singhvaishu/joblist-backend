@@ -17,6 +17,11 @@ This project implements a backend service to handle image processing jobs. A use
 - Store details are referenced from the [Store Master](https://drive.google.com/file/d/1dCdAFEBzN1LVUUKxIZyewOeYx42PtEzb/view?usp=sharing).
 - If an image download fails or an invalid `store_id` is encountered, the job fails.
 
+## Note
+- project does not use a database. Instead, it stores job listings in a CSV file.
+- Store validation is handled using an in-memory Store Master.
+
+
 ## API Endpoints
 
 ### 1. Submit Job
