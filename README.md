@@ -4,6 +4,11 @@ Retail Pulse wants to create a service to process thousands of images collected 
 
 ## Description
 This project implements a backend service to handle image processing jobs. A user submits a job containing store IDs and image URLs. The service then downloads each image, calculates its perimeter, and mimics GPU processing using a random sleep time of 0.1 to 0.4 seconds. The job status can be checked via an API.
+## Features
+- Submit a Job (POST /api/submit)
+- Retrieve Job Status (GET /api/status?jobid=123)
+- Fast store validation using in-memory data
+- Handles multiple jobs concurrently
 
 ## Assumptions
 - Each job consists of multiple stores, each having multiple image URLs.
@@ -80,6 +85,12 @@ This project implements a backend service to handle image processing jobs. A use
 { "error": "Job ID not found" }
 ```
 
+
+#### Store Master
+-Loaded from store_master.csv into memory
+-Contains store_id, store_name, and area_code
+-Used for store validation during job processing
+
 ## Installation & Setup
 
 ### Without Docker
@@ -114,14 +125,21 @@ curl -X POST http://localhost:8080/api/submit/ -H "Content-Type: application/jso
 
 ## Work Environment
 - **OS**: Windows 11 / Ubuntu 22.04
+- **Node.js**: v18+
 - **IDE**: VS Code / GoLand
-- **Dependencies**: Go Modules, Gorilla Mux
+- **Tools**: Postman,, Docker
+
 
 ## Potential Improvements
+- Database Integration: Store results in MongoDB/PostgreSQL for persistence.
+- Advanced Authentication: Use OAuth or API keys for better security.
 - Implement a queue for job processing.
 - Add retry mechanisms for image downloads.
 - Optimize concurrency for faster processing.
 - Improve logging and monitoring.
 
+  
+## Conclusion
+This service efficiently processes images, validates store data in memory, and handles multiple jobs concurrently.
 
 
