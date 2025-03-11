@@ -94,7 +94,7 @@ This project implements a backend service to handle image processing jobs. A use
 ## Installation & Setup
 
 ### Without Docker
-1. Install [Go](https://golang.org/dl/).
+1. Install Node.js.
 2. Clone the repository:
    ```sh
    git clone <repo-url>
@@ -102,11 +102,11 @@ This project implements a backend service to handle image processing jobs. A use
    ```
 3. Install dependencies:
    ```sh
-   go mod tidy
+   npm install
    ```
 4. Run the server:
    ```sh
-   go run main.go
+   npm start
    ```
 
 ### With Docker
