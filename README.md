@@ -1,4 +1,4 @@
-# Backend Intern Assignment
+# Backend  Assignment
 
 Retail Pulse wants to create a service to process thousands of images collected from stores.
 
