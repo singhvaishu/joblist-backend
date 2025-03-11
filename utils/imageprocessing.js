@@ -1,34 +1,20 @@
-const Job = require("../models/job");
+const axios = require('axios');
+const sharp = require('sharp');
+const { promisify } = require('util');
+const sleep = promisify(setTimeout);
 
-
-const processJob = async (job_id) => {
+async function processImage(imageUrl) {
     try {
-        console.log(`Processing job: ${job_id}`);
+        const response = await axios({ url: imageUrl, responseType: 'arraybuffer' });
+        const metadata = await sharp(response.data).metadata();
+        const perimeter = 2 * (metadata.width + metadata.height);
 
-        const job = await Job.findOne({ job_id });
-        if (!job) {
-            console.error(`Job ${job_id} not found.`);
-            return;
-        }
+        await sleep(Math.random() * (400 - 100) + 100); // Simulate GPU delay (0.1s - 0.4s)
 
-        for (const store of job.stores) {
-            for (const image of store.images) {
-
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                image.status = "processed";
-                image.perimeter = Math.random() * 100;
-            }
-        }
-
-        job.status = "completed";
-        await job.save();
-
-        console.log(`Job ${job_id} processed successfully.`);
+        return { image: imageUrl, perimeter };
     } catch (error) {
-        console.error(`Error processing job ${job_id}:`, error);
-        await Job.updateOne({ job_id }, { status: "failed" });
+        return { image: imageUrl, error: 'Image processing failed' };
     }
-};
+}
 
-module.exports = { processJob };
+module.exports = { processImage };

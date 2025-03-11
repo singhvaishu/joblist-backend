@@ -1,63 +1,68 @@
-const Job = require("../models/job");
-const { processJob } = require("../utils/imageprocessing");
-const { v4: uuidv4 } = require("uuid");
+const Job = require('../models/job');
+const Store = require('../models/store');
+const { processImage } = require('../utils/imageprocessing');
+const { getStoreDetails } = require('../utils/storeMaster');
 
-// Submit a new job
+const { v4: uuidv4 } = require('uuid');
+//submit job
 exports.submitJob = async (req, res) => {
-    try {
-        const { count, visits } = req.body;
-        if (!count || !visits || count !== visits.length) {
-            return res.status(400).json({ error: "Invalid request data" });
-        }
+    const { count, visits } = req.body;
 
-        const job_id = uuidv4(); // Generate unique job ID
-        const job = new Job({
-            job_id,
-            status: "ongoing",
-            stores: visits.map(store => ({
-                store_id: store.store_id,
-                images: store.image_url.map(url => ({ url })),
-            })),
-            failedStores: [],
-        });
-
-        await job.save();
-        processJob(job_id);
-
-        res.status(201).json({ job_id });
-    } catch (error) {
-        console.error("Error submitting job:", error);
-        res.status(500).json({ error: "Server error" });
+    if (!count || !visits || count !== visits.length) {
+        return res.status(400).json({ error: "Invalid request format" });
     }
+
+    const job_id = uuidv4();
+    const job = new Job({ job_id, visits });
+
+    await job.save();
+    processJob(job_id);
+
+    res.status(201).json({ job_id });
 };
 
-// Get job status
+async function processJob(job_id) {
+    const job = await Job.findOne({ job_id });
+    if (!job) return;
+
+    job.visits.forEach(async (visit) => {
+        const storeExists = await Store.findOne({ store_id: visit.store_id });
+
+        if (!storeExists) {
+            visit.status = 'failed';
+            visit.results.push({ error: `Invalid store_id: ${visit.store_id}` });
+        } else {
+            visit.status = 'processing';
+
+            for (let imageUrl of visit.image_url) {
+                const result = await processImage(imageUrl);
+                visit.results.push(result);
+            }
+
+            visit.status = 'completed';
+        }
+    });
+
+    await job.save();
+}
+//status
 exports.getJobStatus = async (req, res) => {
-    try {
-        const { jobid } = req.query;
-        if (!jobid) {
-            return res.status(400).json({ error: "Job ID is required" });
-        }
+    const { jobid } = req.query;
+    const job = await Job.findOne({ job_id: jobid });
 
-        const job = await Job.findOne({ job_id: jobid });
-        if (!job) {
-            return res.status(404).json({});
-        }
+    if (!job) return res.status(400).json({});
 
-        if (job.status === "failed") {
-            return res.status(200).json({
-                status: "failed",
-                job_id: job.job_id,
-                error: job.failedStores,
-            });
-        }
-
-        res.status(200).json({
-            status: job.status, // "completed" / "ongoing"
-            job_id: job.job_id,
-        });
-    } catch (error) {
-        console.error("Error fetching job status:", error);
-        res.status(500).json({ error: "Server error" });
-    }
+    res.json({ job_id: job.job_id, status: job.visits.some(v => v.status === 'processing') ? 'ongoing' : 'completed' });
 };
+//job id 
+exports.getStoreById = (req, res) => {
+    const store_id = req.params.store_id.trim();
+    const store = getStoreDetails(store_id);
+
+    if (!store) {
+        return res.status(404).json({ message: "Store not found" });
+    }
+
+    res.json(store);
+};
+
