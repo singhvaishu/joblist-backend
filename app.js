@@ -13,9 +13,9 @@ connectDB();
 
 
 loadStoreMaster()
-    .then(() => console.log("📦 Store Master Data Ready"))
+    .then(() => console.log(" Store Master Data Ready"))
     .catch((err) => {
-        console.error("❌ Failed to load Store Master:", err);
+        console.error(" Failed to load Store Master:", err);
         process.exit(1);
     });
 

@@ -17,7 +17,7 @@ const loadStoreMaster = () => {
                 }
             })
             .on("end", () => {
-                console.log("✅ Store Master loaded successfully!");
+                console.log("Store Master loaded successfully!");
                 resolve();
             })
             .on("error", (err) => reject(err));
